@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.figma-import/diff/
+*.local
+.DS_Store
