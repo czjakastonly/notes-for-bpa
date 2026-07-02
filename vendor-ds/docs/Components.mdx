@@ -1,0 +1,879 @@
+{/*
+  @ai-context: Components documentation for the Stonly Design System.
+  This document covers all UI components: buttons, inputs, overlays, modals, and lists.
+  Includes props, usage examples, and patterns for each component.
+*/}
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design System/Components" />
+
+# Components
+
+The design system provides a comprehensive set of UI components organized by category.
+
+**Figma Reference:** https://www.figma.com/design/X9o3ueR8dt2fsp96eUSn4R/Components?node-id=4121-13041&m=dev
+
+---
+
+## Button Components
+
+All button components support ref forwarding and standard HTML button attributes.
+
+### ButtonPrimary
+
+Primary action button with filled background.
+
+```typescript
+interface ButtonPrimaryProps {
+  children?: ReactNode;
+  disabled?: boolean;
+  iconLeft?: ReactNode;
+  iconRight?: ReactNode;
+  iconOnly?: ReactNode;
+  isLoading?: boolean;
+  isPressed?: boolean;
+  label?: string;
+  onClick?: () => void;
+  size?: 'small' | 'standard';  // default: 'standard'
+  type?: 'button' | 'submit' | 'reset';
+}
+```
+
+```tsx
+import { ButtonPrimary } from '@stonly/design-system';
+
+// Basic
+<ButtonPrimary>Save Changes</ButtonPrimary>
+
+// With icon
+<ButtonPrimary iconLeft={<PlusIcon />}>Add Item</ButtonPrimary>
+
+// Loading state
+<ButtonPrimary isLoading>Saving...</ButtonPrimary>
+
+// Small size
+<ButtonPrimary size="small">Small Button</ButtonPrimary>
+
+// Icon only
+<ButtonPrimary iconOnly={<SettingsIcon />} />
+```
+
+### ButtonOutline
+
+Secondary action button with outlined style.
+
+```tsx
+import { ButtonOutline } from '@stonly/design-system';
+
+<ButtonOutline>Cancel</ButtonOutline>
+<ButtonOutline iconLeft={<EditIcon />}>Edit</ButtonOutline>
+```
+
+### ButtonMinimal
+
+Low-emphasis button with minimal styling.
+
+```tsx
+import { ButtonMinimal } from '@stonly/design-system';
+
+<ButtonMinimal>Learn More</ButtonMinimal>
+<ButtonMinimal iconOnly={<CloseIcon />} />
+```
+
+### ButtonLink
+
+Text-style button that looks like a link.
+
+```tsx
+import { ButtonLink } from '@stonly/design-system';
+
+<ButtonLink>View Details</ButtonLink>
+<ButtonLink iconRight={<ArrowIcon />}>Next</ButtonLink>
+```
+
+### ButtonAdd
+
+Specialized button for adding items.
+
+```tsx
+import { ButtonAdd } from '@stonly/design-system';
+
+<ButtonAdd>Add New Item</ButtonAdd>
+```
+
+### ButtonSplit
+
+Container for combining related buttons.
+
+```tsx
+import { ButtonSplit, ButtonPrimary } from '@stonly/design-system';
+
+<ButtonSplit>
+  <ButtonPrimary>Save</ButtonPrimary>
+  <ButtonPrimary iconOnly={<ChevronDownIcon />} />
+</ButtonSplit>
+```
+
+### Loader
+
+Loading indicator component used internally by buttons.
+
+```tsx
+import { Loader } from '@stonly/design-system';
+
+<Loader />
+<Loader isDark />  // For light backgrounds
+```
+
+---
+
+## Input Components
+
+The design system has two levels of input components:
+- **Input*** - High-level components with label, message, and validation UI
+- **Field*** - Low-level form controls without wrapper UI
+
+### Input Component Architecture
+
+```tsx
+// InputText = FieldText wrapped with InputWrap
+<InputWrap label="Email" message="Enter valid email" status="error">
+  <FieldText />
+</InputWrap>
+```
+
+### Common Input Props
+
+```typescript
+// High-level Input* props
+interface InputProps {
+  label?: string;
+  message?: string;
+  status?: 'error' | 'warning' | 'success' | 'info' | false;
+  required?: boolean;
+  tooltip?: ReactNode;
+  id?: string;
+  className?: string;
+}
+
+// Low-level Field* props
+interface FieldProps {
+  value?: string | number;
+  onChange?: (e: ChangeEvent) => void;
+  onChangeValue?: (value: string) => void;
+  disabled?: boolean;
+  status?: Status;
+  tabIndex?: number;
+  name?: string;
+  iconLeft?: ReactNode;
+  iconRight?: ReactNode;
+  additionalActionNode?: ReactNode;
+}
+```
+
+### InputText / FieldText
+
+Single-line text input.
+
+```tsx
+import { InputText, FieldText } from '@stonly/design-system';
+
+// High-level with label
+<InputText
+  label="Username"
+  placeholder="Enter username"
+  required
+  message="Username is required"
+  status="error"
+/>
+
+// Low-level
+<FieldText
+  value={value}
+  onChangeValue={setValue}
+  placeholder="Enter text"
+/>
+```
+
+### InputNumber / FieldNumber
+
+Numeric input with increment/decrement controls.
+
+```tsx
+import { InputNumber } from '@stonly/design-system';
+
+<InputNumber
+  label="Quantity"
+  min={0}
+  max={100}
+  step={1}
+/>
+```
+
+### InputTextarea / FieldTextarea
+
+Multi-line text input.
+
+```tsx
+import { InputTextarea } from '@stonly/design-system';
+
+<InputTextarea
+  label="Description"
+  rows={4}
+  maxLength={500}
+/>
+```
+
+### InputTextareaAi
+
+Textarea with AI-related styling/features.
+
+```tsx
+import { InputTextareaAi } from '@stonly/design-system';
+
+<InputTextareaAi
+  label="AI Prompt"
+  placeholder="Enter your prompt..."
+/>
+```
+
+### InputSearch / FieldSearch
+
+Search input with search icon.
+
+```tsx
+import { InputSearch } from '@stonly/design-system';
+
+<InputSearch
+  placeholder="Search..."
+  onChangeValue={setSearchQuery}
+/>
+```
+
+### InputPassword
+
+Password input with show/hide toggle.
+
+```tsx
+import { InputPassword } from '@stonly/design-system';
+
+<InputPassword
+  label="Password"
+  required
+/>
+```
+
+### InputDate / FieldDate
+
+Date picker input.
+
+```tsx
+import { InputDate } from '@stonly/design-system';
+
+<InputDate
+  label="Start Date"
+  value={date}
+  onChange={setDate}
+/>
+```
+
+### InputSelect / InputDropdown
+
+Dropdown select input. Uses `<Option>` children (not an `items` prop).
+
+```tsx
+import { InputSelect, Option } from '@stonly/design-system';
+
+<InputSelect
+  label="Country"
+  value={country}
+  onChangeValue={setCountry}
+>
+  <Option value="us" label="United States" />
+  <Option value="uk" label="United Kingdom" />
+  <Option value="ca" label="Canada" />
+</InputSelect>
+```
+
+### InputColor
+
+Color picker input.
+
+```tsx
+import { InputColor } from '@stonly/design-system';
+
+<InputColor
+  label="Theme Color"
+  value={color}
+  onChange={setColor}
+/>
+```
+
+### FieldCheck
+
+Checkbox input.
+
+```tsx
+import { FieldCheck } from '@stonly/design-system';
+
+<FieldCheck
+  label="I agree to terms"
+  checked={agreed}
+  onChange={(e) => setAgreed(e.target.checked)}
+/>
+```
+
+### FieldToggle
+
+Toggle switch input.
+
+```tsx
+import { FieldToggle } from '@stonly/design-system';
+
+<FieldToggle
+  label="Enable notifications"
+  checked={enabled}
+  onChange={(e) => setEnabled(e.target.checked)}
+/>
+```
+
+### FieldRange
+
+Range slider input.
+
+```tsx
+import { FieldRange } from '@stonly/design-system';
+
+<FieldRange
+  min={0}
+  max={100}
+  value={volume}
+  onChange={(e) => setVolume(e.target.value)}
+/>
+```
+
+### Input Helper Components
+
+```tsx
+import {
+  InputWrap,      // Wrapper with label, message, tooltip
+  FieldGroup,     // Groups multiple fields
+  ButtonFieldSelect,  // Select trigger button
+  ButtonAdditionalAction,  // Additional action button
+  ColorRect,      // Color display rectangle
+} from '@stonly/design-system';
+
+// InputWrap usage
+<InputWrap
+  label="Email"
+  message="Please enter a valid email"
+  status="error"
+  required
+  tooltip={<span>Help text</span>}
+>
+  <FieldText />
+</InputWrap>
+
+// FieldGroup usage
+<FieldGroup>
+  <FieldText placeholder="First Name" />
+  <FieldText placeholder="Last Name" />
+</FieldGroup>
+```
+
+---
+
+## Overlay Components
+
+### Tooltip
+
+Shows contextual information on hover/focus.
+
+```typescript
+interface TooltipProps {
+  children: ReactNode;
+  content: ReactNode;
+  placement?: 'top' | 'top-start' | 'top-end' |
+              'right' | 'right-start' | 'right-end' |
+              'bottom' | 'bottom-start' | 'bottom-end' |
+              'left' | 'left-start' | 'left-end';
+  isInitialOpen?: boolean;
+  isFlipDisabled?: boolean;
+  isFocusListenerEnabled?: boolean;
+  isHoverListenerEnabled?: boolean;
+  strategy?: 'fixed' | 'absolute';
+  offset?: number;
+}
+```
+
+```tsx
+import { Tooltip } from '@stonly/design-system';
+
+<Tooltip content="Save your changes" placement="top">
+  <ButtonPrimary>Save</ButtonPrimary>
+</Tooltip>
+```
+
+### Popover
+
+Flexible overlay container.
+
+```tsx
+import { Popover } from '@stonly/design-system';
+
+<Popover
+  minWidthPx={200}
+  maxWidthPx={400}
+  isFocusLocked
+>
+  <PopoverContent />
+</Popover>
+```
+
+### Dropdown
+
+Dropdown menu component with positioning.
+
+```typescript
+interface DropdownProps {
+  as?: Component;  // Trigger component (default: ButtonFieldSelect)
+  children: ReactNode;
+  placement?: Placement;
+  strategy?: 'fixed' | 'absolute';
+  mainAxisOffset?: number;
+  widthExtendPx?: number;
+  maxWidthRatio?: number;
+  minWidthRatio?: number;
+  widthPx?: number;
+  isFlipDisabled?: boolean;
+  isFocusLocked?: boolean;
+  onOpen?: () => void;
+  onClose?: () => void;
+  closingKeyList?: string[];  // default: ['Escape', 'Tab']
+}
+
+// Imperative handle methods
+interface DropdownHandle {
+  open(): void;
+  close(): void;
+  isOpen: boolean;
+  focus(): void;
+  getBoundingClientRect(): DOMRect;
+}
+```
+
+```tsx
+import { Dropdown, DropdownContext } from '@stonly/design-system';
+
+// Basic usage
+<Dropdown>
+  <DropdownContent>
+    <MenuItem onClick={handleEdit}>Edit</MenuItem>
+    <MenuItem onClick={handleDelete}>Delete</MenuItem>
+  </DropdownContent>
+</Dropdown>
+
+// With imperative control
+const dropdownRef = useRef<DropdownHandle>(null);
+
+<Dropdown ref={dropdownRef}>
+  <DropdownContent />
+</Dropdown>
+
+// Open programmatically
+dropdownRef.current?.open();
+```
+
+### Menu
+
+Menu component for dropdown menus.
+
+```tsx
+import { Menu } from '@stonly/design-system';
+
+<Menu
+  trigger={<ButtonMinimal iconOnly={<MenuIcon />} />}
+  items={[
+    { label: 'Edit', onClick: handleEdit },
+    { label: 'Delete', onClick: handleDelete },
+  ]}
+/>
+```
+
+---
+
+## Modal Components
+
+### ModalWindow
+
+Basic modal window component.
+
+```typescript
+interface ModalWindowProps {
+  children: ReactNode;
+  onCloseClick?: () => void;
+  onBackdropClick?: () => void;
+  closePositionTop?: number;
+  closePositionRight?: number;
+}
+```
+
+```tsx
+import { ModalWindow } from '@stonly/design-system';
+
+{isOpen && (
+  <ModalWindow onCloseClick={() => setIsOpen(false)}>
+    <ModalContent>
+      <h2>Modal Title</h2>
+      <p>Modal content goes here</p>
+    </ModalContent>
+  </ModalWindow>
+)}
+```
+
+### ModalPanel
+
+Modal with panel-style sizing.
+
+```tsx
+import { ModalPanel } from '@stonly/design-system';
+
+<ModalPanel onCloseClick={handleClose}>
+  <PanelContent />
+</ModalPanel>
+```
+
+### ModalFullscreen
+
+Full-screen modal overlay.
+
+```tsx
+import { ModalFullscreen } from '@stonly/design-system';
+
+<ModalFullscreen onCloseClick={handleClose}>
+  <FullscreenContent />
+</ModalFullscreen>
+```
+
+---
+
+## Dialog Components
+
+### WarningDialog
+
+Confirmation/warning dialog.
+
+```typescript
+interface WarningDialogProps {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  onCancel?: () => void;
+}
+```
+
+```tsx
+import { WarningDialog, useImperativeModalWarningDialog } from '@stonly/design-system';
+
+// Declarative
+<WarningDialog
+  title="Delete Item"
+  message="Are you sure you want to delete this item?"
+  confirmLabel="Delete"
+  onConfirm={handleDelete}
+  onCancel={handleCancel}
+/>
+
+// Imperative
+const { open, close } = useImperativeModalWarningDialog();
+
+const handleDelete = () => {
+  open({
+    title: 'Delete Item',
+    message: 'Are you sure?',
+    confirmLabel: 'Delete',
+    onConfirm: () => {
+      deleteItem();
+      close();
+    }
+  });
+};
+```
+
+### ActionsDialog
+
+Dialog with multiple action options.
+
+```tsx
+import { ActionsDialog, useImperativeModalActionsDialog } from '@stonly/design-system';
+
+const { open } = useImperativeModalActionsDialog();
+
+open({
+  title: 'Choose Action',
+  actions: [
+    { label: 'Save', onClick: handleSave },
+    { label: 'Save As...', onClick: handleSaveAs },
+    { label: 'Discard', onClick: handleDiscard },
+  ]
+});
+```
+
+### MiniDialog
+
+Lightweight dialog for simple interactions.
+
+```tsx
+import { MiniDialog, DialogSectionHeading } from '@stonly/design-system';
+
+<MiniDialog>
+  <DialogSectionHeading>Section Title</DialogSectionHeading>
+  <DialogContent />
+</MiniDialog>
+```
+
+### Dialog Helper Components
+
+```tsx
+import {
+  DialogHeader,
+  DialogFooterWrap,
+  DialogContentWrap,
+  DialogCloseButton
+} from '@stonly/design-system';
+
+<ModalWindow>
+  <DialogHeader>
+    <h2>Dialog Title</h2>
+    <DialogCloseButton onClick={handleClose} />
+  </DialogHeader>
+  <DialogContentWrap>
+    <p>Dialog content</p>
+  </DialogContentWrap>
+  <DialogFooterWrap>
+    <ButtonOutline onClick={handleCancel}>Cancel</ButtonOutline>
+    <ButtonPrimary onClick={handleConfirm}>Confirm</ButtonPrimary>
+  </DialogFooterWrap>
+</ModalWindow>
+```
+
+---
+
+## List Components
+
+### List
+
+Visual list presentation components.
+
+```tsx
+import {
+  List,
+  ListItemStandard,
+  ListSectionHeading,
+  ListSearchInput,
+  ListBody,
+  ListHeaderTitle
+} from '@stonly/design-system';
+
+<List>
+  <ListHeaderTitle>My List</ListHeaderTitle>
+  <ListSearchInput placeholder="Search..." />
+  <ListBody>
+    <ListSectionHeading>Section A</ListSectionHeading>
+    <ListItemStandard>Item 1</ListItemStandard>
+    <ListItemStandard>Item 2</ListItemStandard>
+    <ListSectionHeading>Section B</ListSectionHeading>
+    <ListItemStandard>Item 3</ListItemStandard>
+  </ListBody>
+</List>
+```
+
+### ListBox
+
+Headless list logic component for keyboard navigation and selection.
+
+```typescript
+interface ListBoxProps {
+  value?: string | number;
+  children: ReactNode;
+  onAction?: (value: string | number) => void;
+  onPostAction?: () => void;
+  autoFocus?: boolean;
+}
+```
+
+```tsx
+import {
+  ListBox,
+  withListBox,
+  withListBoxOption,
+  useListBoxOption
+} from '@stonly/design-system';
+
+// Using hooks
+function MyListItem({ value, label }) {
+  const { isHighlighted, isSelected, props } = useListBoxOption(value);
+
+  return (
+    <div {...props} className={isHighlighted ? 'highlighted' : ''}>
+      {label}
+      {isSelected && <CheckIcon />}
+    </div>
+  );
+}
+
+// Using HOC
+const MyListBoxItem = withListBoxOption(ListItemStandard);
+```
+
+### Select
+
+Dropdown-based selection component. Uses `<Option>` children (not an `items` prop).
+
+```tsx
+import { Select, Option } from '@stonly/design-system';
+
+// Single select
+<Select
+  value={selected}
+  onChangeValue={setSelected}
+>
+  <Option value="1" label="Option 1" />
+  <Option value="2" label="Option 2" />
+  <Option value="3" label="Option 3" />
+</Select>
+
+// Multiple select
+<Select
+  isMultiple
+  value={selectedItems}
+  onChangeValue={setSelectedItems}
+>
+  <Option value="1" label="Option 1" />
+  <Option value="2" label="Option 2" />
+  <Option value="3" label="Option 3" />
+</Select>
+```
+
+---
+
+## Other Components
+
+### Calendar
+
+Date picker calendar component.
+
+```tsx
+import { Calendar } from '@stonly/design-system';
+
+<Calendar
+  value={selectedDate}
+  onChange={setSelectedDate}
+/>
+```
+
+### Notifications
+
+Toast/notification components.
+
+```tsx
+import { Notification, NotificationSmall } from '@stonly/design-system';
+
+<Notification
+  status="success"
+  message="Changes saved successfully"
+/>
+
+<NotificationSmall
+  status="error"
+  message="Error occurred"
+/>
+```
+
+### Link Components
+
+```tsx
+import { LinkPrimary } from '@stonly/design-system';
+
+<LinkPrimary href="/about">About Us</LinkPrimary>
+<LinkPrimary href="/docs" iconRight={<ExternalIcon />}>
+  Documentation
+</LinkPrimary>
+```
+
+---
+
+## Status System
+
+Many components support a `status` prop for validation states:
+
+```typescript
+type Status = 'error' | 'warning' | 'success' | 'info' | false;
+```
+
+Status affects:
+- Border color
+- Icon display (status indicator)
+- Message styling
+- ARIA attributes
+
+```tsx
+<InputText
+  status="error"
+  message="This field is required"
+/>
+
+<InputText
+  status="success"
+  message="Valid email address"
+/>
+```
+
+---
+
+## Static Class Names
+
+For testing, components expose static class names:
+
+```typescript
+import { STATIC_CLASS_NAME } from '@stonly/design-system';
+
+// Available class names
+STATIC_CLASS_NAME.buttonMinimal
+STATIC_CLASS_NAME.dialog
+STATIC_CLASS_NAME.dialogContent
+STATIC_CLASS_NAME.dropdownTrigger
+STATIC_CLASS_NAME.field
+STATIC_CLASS_NAME.fieldGroup
+STATIC_CLASS_NAME.fieldCheck
+STATIC_CLASS_NAME.fieldToggle
+STATIC_CLASS_NAME.focusLocked
+STATIC_CLASS_NAME.inputLabel
+STATIC_CLASS_NAME.inputMessage
+STATIC_CLASS_NAME.inputTooltip
+STATIC_CLASS_NAME.inputWrap
+STATIC_CLASS_NAME.modal
+STATIC_CLASS_NAME.modalContainer
+STATIC_CLASS_NAME.modalBackdrop
+STATIC_CLASS_NAME.modalClose
+STATIC_CLASS_NAME.modalFullscreen
+STATIC_CLASS_NAME.notification
+STATIC_CLASS_NAME.portal
+STATIC_CLASS_NAME.statusError
+STATIC_CLASS_NAME.statusIcon
+STATIC_CLASS_NAME.statusInfo
+STATIC_CLASS_NAME.statusSuccess
+STATIC_CLASS_NAME.statusWarning
+STATIC_CLASS_NAME.tickIcon
+STATIC_CLASS_NAME.tooltip
+STATIC_CLASS_NAME.tooltipTrigger
+```
+
+```tsx
+// Testing example
+const button = screen.getByClassName(STATIC_CLASS_NAME.buttonMinimal);
+const modal = document.querySelector(`.${STATIC_CLASS_NAME.modal}`);
+```

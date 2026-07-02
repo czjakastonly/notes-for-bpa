@@ -1,0 +1,423 @@
+{/*
+  @ai-context: Providers documentation for the Stonly Design System.
+  This document covers all context providers: MainProvider, LastEventProvider,
+  and ImperativeModalWindowProvider. Includes setup instructions and usage.
+*/}
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design System/Providers" />
+
+# Providers
+
+The design system provides context providers that enable various features across your application.
+
+---
+
+## Main Provider
+
+The main `Provider` component combines all design system providers into a single wrapper.
+
+### Import
+
+```typescript
+import { Provider } from '@stonly/design-system';
+```
+
+### Setup
+
+```tsx
+import { ThemeProvider } from 'styled-components';
+import { Provider, theme } from '@stonly/design-system';
+
+function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <Provider>
+        {/* Your application */}
+      </Provider>
+    </ThemeProvider>
+  );
+}
+```
+
+### What it includes
+
+The main Provider wraps your app with:
+1. `LastEventProvider` - Tracks keyboard vs mouse events
+2. `ImperativeModalWindowProvider` - Enables imperative modal control
+
+### Provider Tree
+
+```
+<LastEventProvider>
+  <ImperativeModalWindowProvider>
+    {children}
+  </ImperativeModalWindowProvider>
+</LastEventProvider>
+```
+
+---
+
+## LastEventProvider
+
+Tracks whether the last user interaction was via keyboard or mouse. Used to show/hide focus indicators appropriately.
+
+### Import
+
+```typescript
+import {
+  LastEventProvider,
+  useGetWasLastEventTypeKeyboard,
+  LastEventContext
+} from '@stonly/design-system';
+```
+
+### Context Value
+
+```typescript
+interface LastEventContextValue {
+  getWasLastEventTypeKeyboard(): boolean;
+}
+```
+
+### Usage
+
+```tsx
+import { useGetWasLastEventTypeKeyboard } from '@stonly/design-system';
+
+function FocusRing({ children }) {
+  const getWasLastEventTypeKeyboard = useGetWasLastEventTypeKeyboard();
+
+  return (
+    <div
+      className={getWasLastEventTypeKeyboard() ? 'show-focus-ring' : ''}
+    >
+      {children}
+    </div>
+  );
+}
+```
+
+### How it works
+
+1. Listens to global `keydown` events - sets flag to `true`
+2. Listens to global `mousedown` events - sets flag to `false`
+3. Components query this flag to conditionally show focus indicators
+
+### Use Cases
+
+- Show focus outline only when user is navigating via keyboard
+- Hide focus rings when user is clicking with mouse
+- Improve visual clarity for mouse users while maintaining accessibility
+
+```tsx
+// Example: Conditional focus styling
+const Button = styled.button`
+  outline: none;
+
+  &:focus {
+    /* Only show focus ring if last event was keyboard */
+    .show-keyboard-focus & {
+      box-shadow: 0 0 0 2px ${color.borderFocus};
+    }
+  }
+`;
+```
+
+---
+
+## ImperativeModalWindowProvider
+
+Enables imperative (programmatic) control of modal windows throughout your application.
+
+### Import
+
+```typescript
+import {
+  ImperativeModalWindowProvider,
+  useImperativeModalWindow,
+  ImperativeModalWindowContext
+} from '@stonly/design-system';
+```
+
+### Context Methods
+
+```typescript
+interface ImperativeModalWindowContextValue {
+  open(content: ReactNode, options?: ModalWindowOptions): void;
+  openComponent<P>(
+    component: React.ComponentType<P>,
+    props: P,
+    options?: ModalWindowOptions
+  ): void;
+  close(): void;
+}
+
+interface ModalWindowOptions {
+  onCloseClick?: () => void;
+  onBackdropClick?: () => void;
+  closePositionTop?: number;
+  closePositionRight?: number;
+}
+```
+
+### Usage
+
+```tsx
+import { useImperativeModalWindow } from '@stonly/design-system';
+
+function MyComponent() {
+  const modal = useImperativeModalWindow();
+
+  // Open with content
+  const showModal = () => {
+    modal.open(
+      <div>
+        <h2>Modal Content</h2>
+        <p>This is the modal body</p>
+        <button onClick={modal.close}>Close</button>
+      </div>,
+      {
+        onBackdropClick: modal.close,
+        onCloseClick: modal.close
+      }
+    );
+  };
+
+  // Open with component
+  const showConfirmation = () => {
+    modal.openComponent(
+      ConfirmDialog,
+      {
+        title: 'Confirm Action',
+        message: 'Are you sure?',
+        onConfirm: () => {
+          performAction();
+          modal.close();
+        },
+        onCancel: modal.close
+      }
+    );
+  };
+
+  return (
+    <>
+      <button onClick={showModal}>Show Modal</button>
+      <button onClick={showConfirmation}>Show Confirmation</button>
+    </>
+  );
+}
+```
+
+### Singleton Pattern
+
+The `ImperativeModalWindowProvider` manages a single modal instance. Opening a new modal will replace any existing open modal.
+
+```tsx
+// This will close the first modal and open the second
+modal.open(<FirstModal />);
+modal.open(<SecondModal />);  // First modal is replaced
+```
+
+### Integration with Dialog Components
+
+The design system provides specialized hooks built on this provider:
+
+```typescript
+import {
+  useImperativeModalWarningDialog,
+  useImperativeModalActionsDialog
+} from '@stonly/design-system';
+
+// Warning dialog
+const warningDialog = useImperativeModalWarningDialog();
+warningDialog.open({
+  title: 'Warning',
+  message: 'Are you sure you want to proceed?',
+  onConfirm: handleConfirm
+});
+
+// Actions dialog
+const actionsDialog = useImperativeModalActionsDialog();
+actionsDialog.open({
+  title: 'Choose Option',
+  actions: [
+    { label: 'Option A', onClick: handleA },
+    { label: 'Option B', onClick: handleB }
+  ]
+});
+```
+
+---
+
+## Provider Setup Guide
+
+### Minimal Setup
+
+```tsx
+import { ThemeProvider } from 'styled-components';
+import { Provider, theme } from '@stonly/design-system';
+
+ReactDOM.render(
+  <ThemeProvider theme={theme}>
+    <Provider>
+      <App />
+    </Provider>
+  </ThemeProvider>,
+  document.getElementById('root')
+);
+```
+
+### With Custom Theme
+
+```tsx
+import { ThemeProvider } from 'styled-components';
+import { Provider, theme } from '@stonly/design-system';
+
+const customTheme = {
+  ...theme,
+  // Override specific values
+  color: {
+    ...theme.color,
+    backgroundPrimary: '#custom-color'
+  }
+};
+
+<ThemeProvider theme={customTheme}>
+  <Provider>
+    <App />
+  </Provider>
+</ThemeProvider>
+```
+
+### With Additional Providers
+
+```tsx
+import { ThemeProvider } from 'styled-components';
+import { Provider, theme } from '@stonly/design-system';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
+
+<QueryClientProvider client={queryClient}>
+  <ThemeProvider theme={theme}>
+    <Provider>
+      <App />
+    </Provider>
+  </ThemeProvider>
+</QueryClientProvider>
+```
+
+---
+
+## Best Practices
+
+### 1. Provider Order
+
+Always wrap design system Provider inside ThemeProvider:
+
+```tsx
+// Correct
+<ThemeProvider theme={theme}>
+  <Provider>
+    <App />
+  </Provider>
+</ThemeProvider>
+
+// Incorrect - theme won't be available
+<Provider>
+  <ThemeProvider theme={theme}>
+    <App />
+  </ThemeProvider>
+</Provider>
+```
+
+### 2. Single Provider Instance
+
+Use only one Provider at the root of your app. Nested providers can cause unexpected behavior:
+
+```tsx
+// Correct
+<Provider>
+  <ComponentA />
+  <ComponentB />
+</Provider>
+
+// Avoid - nested providers
+<Provider>
+  <ComponentA>
+    <Provider>  {/* Don't do this */}
+      <ComponentB />
+    </Provider>
+  </ComponentA>
+</Provider>
+```
+
+### 3. Testing Setup
+
+In tests, wrap components with the provider:
+
+```tsx
+import { render } from '@testing-library/react';
+import { ThemeProvider } from 'styled-components';
+import { Provider, theme } from '@stonly/design-system';
+
+const renderWithProviders = (ui) => {
+  return render(
+    <ThemeProvider theme={theme}>
+      <Provider>
+        {ui}
+      </Provider>
+    </ThemeProvider>
+  );
+};
+
+test('renders component', () => {
+  renderWithProviders(<MyComponent />);
+});
+```
+
+### 4. Storybook Decorator
+
+Use providers as a decorator in Storybook:
+
+```tsx
+// .storybook/preview.tsx
+import { ThemeProvider } from 'styled-components';
+import { Provider, theme } from '@stonly/design-system';
+
+export const decorators = [
+  (Story) => (
+    <ThemeProvider theme={theme}>
+      <Provider>
+        <Story />
+      </Provider>
+    </ThemeProvider>
+  ),
+];
+```
+
+---
+
+## Troubleshooting
+
+### Modal not opening
+
+Ensure the `ImperativeModalWindowProvider` is in your component tree:
+
+```tsx
+// Check if provider is present
+const modal = useImperativeModalWindow();
+if (!modal) {
+  console.error('ImperativeModalWindowProvider not found');
+}
+```
+
+### Focus indicators always showing
+
+Check that `LastEventProvider` is properly set up. The provider listens to global events, so it should be near the root of your app.
+
+### Theme not applying
+
+Verify the order of providers. `ThemeProvider` must wrap the design system `Provider`.

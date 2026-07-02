@@ -1,0 +1,233 @@
+{/*
+  @ai-context: This is the main documentation for the Stonly Design System.
+  This document provides an overview of all available components, atoms, utils, and providers.
+  Use this as a reference for understanding the design system architecture and usage patterns.
+*/}
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design System/Introduction" />
+
+# Stonly Design System
+
+## Overview
+
+The Stonly Design System is a comprehensive React component library built with TypeScript and styled-components. It provides a consistent set of UI components, design tokens, utilities, and providers for building accessible, themeable user interfaces.
+
+**Figma Design References:**
+- Components: https://www.figma.com/design/X9o3ueR8dt2fsp96eUSn4R/Components?node-id=4121-13041&m=dev
+- Atoms: https://www.figma.com/design/SvImSJtWiaK0m6BSC4WEBn/Atoms?node-id=0-1&p=f&m=dev
+
+---
+
+## Core Concepts
+
+### 8px Spacing System
+
+The design system uses an **8px multiplier** for all spacing values. When you pass a numeric value to spacing props (`gap`, `margin`, `padding`), it gets multiplied by 8.
+
+```typescript
+// PIXEL_MULTIPLICATOR = 8
+
+<Flex gap={1} />      // gap: 8px
+<Flex gap={2} />      // gap: 16px
+<Flex gap={3} />      // gap: 24px
+<Flex margin={2} />   // margin: 16px
+<Flex padding={4} />  // padding: 32px
+```
+
+You can also pass string values for custom spacing:
+```typescript
+<Flex gap="12px" />   // gap: 12px (bypasses multiplier)
+```
+
+### Theme Integration
+
+All components use styled-components with theme integration. Wrap your app with the theme provider:
+
+```typescript
+import { ThemeProvider } from 'styled-components';
+import { theme } from '@stonly/design-system';
+
+<ThemeProvider theme={theme}>
+  <App />
+</ThemeProvider>
+```
+
+---
+
+## Installation & Setup
+
+### Basic Setup
+
+```typescript
+import {
+  // Theme
+  theme,
+
+  // Providers
+  Provider,
+
+  // Components
+  ButtonPrimary,
+  InputText,
+  RowFlex,
+  ColumnFlex,
+
+  // Atoms
+  color,
+  typography,
+  shadows,
+  zIndex
+} from '@stonly/design-system';
+```
+
+### Provider Setup
+
+Wrap your application with the design system providers:
+
+```typescript
+import { ThemeProvider } from 'styled-components';
+import Provider, { theme } from '@stonly/design-system';
+
+function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <Provider>
+        {/* Your app content */}
+      </Provider>
+    </ThemeProvider>
+  );
+}
+```
+
+---
+
+## Architecture
+
+### Directory Structure
+
+```
+src/ui/
+├── atoms/           # Design tokens (colors, typography, shadows, zIndex)
+├── components/      # UI components (buttons, inputs, modals, etc.)
+├── providers/       # Context providers (LastEvent, ImperativeModal)
+├── utils/           # Utility functions and hooks
+└── constants.ts     # Static class names for testing
+```
+
+### Export Categories
+
+| Category | Description |
+|----------|-------------|
+| **Atoms** | Design tokens: `color`, `typography`, `shadows`, `zIndex`, `scrollbars` |
+| **Layout** | `Flex`, `RowFlex`, `ColumnFlex`, `VisuallyHidden` |
+| **Buttons** | `ButtonPrimary`, `ButtonOutline`, `ButtonMinimal`, `ButtonLink`, `ButtonAdd`, `ButtonSplit` |
+| **Inputs** | High-level: `InputText`, `InputNumber`, `InputSelect`, etc. |
+| **Fields** | Low-level: `FieldText`, `FieldCheck`, `FieldToggle`, etc. |
+| **Overlays** | `Tooltip`, `Popover`, `Dropdown`, `Menu` |
+| **Modals** | `ModalWindow`, `ModalPanel`, `ModalFullscreen` |
+| **Dialogs** | `WarningDialog`, `ActionsDialog`, `MiniDialog` |
+| **Lists** | `List`, `ListBox`, `Select` |
+| **Utils** | `Portal`, `FocusLock`, `IconSvg`, `StackNavigator`, Interactions |
+| **Providers** | `LastEventProvider`, `ImperativeModalWindowProvider` |
+
+---
+
+## Quick Start Examples
+
+### Layout with RowFlex and ColumnFlex
+
+```tsx
+import { RowFlex, ColumnFlex, ButtonPrimary } from '@stonly/design-system';
+
+// Horizontal layout
+<RowFlex gap={2} alignItems="center">
+  <ButtonPrimary>Action 1</ButtonPrimary>
+  <ButtonPrimary>Action 2</ButtonPrimary>
+</RowFlex>
+
+// Vertical layout
+<ColumnFlex gap={3} padding={2}>
+  <InputText label="Name" />
+  <InputText label="Email" />
+  <ButtonPrimary>Submit</ButtonPrimary>
+</ColumnFlex>
+```
+
+### Form with Inputs
+
+```tsx
+import { ColumnFlex, InputText, InputSelect, ButtonPrimary } from '@stonly/design-system';
+
+<ColumnFlex gap={2}>
+  <InputText
+    label="Username"
+    required
+    status="error"
+    message="Username is required"
+  />
+  <InputSelect
+    label="Country"
+    value={country}
+    onChangeValue={setCountry}
+  >
+    <Option value="us" label="United States" />
+    <Option value="uk" label="United Kingdom" />
+  </InputSelect>
+  <ButtonPrimary>Submit</ButtonPrimary>
+</ColumnFlex>
+```
+
+### Modal Dialog
+
+```tsx
+import { useImperativeModalWarningDialog } from '@stonly/design-system';
+
+function MyComponent() {
+  const { open } = useImperativeModalWarningDialog();
+
+  const handleDelete = () => {
+    open({
+      title: 'Delete Item',
+      message: 'Are you sure you want to delete this item?',
+      confirmLabel: 'Delete',
+      onConfirm: () => { /* delete logic */ }
+    });
+  };
+
+  return <ButtonPrimary onClick={handleDelete}>Delete</ButtonPrimary>;
+}
+```
+
+---
+
+## Accessibility
+
+The design system is built with accessibility in mind:
+
+- All interactive components support keyboard navigation
+- ARIA attributes are properly set (labels, roles, states)
+- Focus management is handled by `FocusLock` component
+- The `LastEventProvider` tracks keyboard vs mouse focus for appropriate visual indicators
+- Color contrast ratios meet WCAG guidelines
+
+---
+
+## Testing
+
+Static class names are provided for testing queries:
+
+```typescript
+import { STATIC_CLASS_NAME } from '@stonly/design-system';
+
+// Available class names:
+STATIC_CLASS_NAME.buttonMinimal
+STATIC_CLASS_NAME.dialog
+STATIC_CLASS_NAME.dropdownTrigger
+STATIC_CLASS_NAME.field
+STATIC_CLASS_NAME.inputLabel
+STATIC_CLASS_NAME.modal
+STATIC_CLASS_NAME.tooltip
+// ... and more
+```

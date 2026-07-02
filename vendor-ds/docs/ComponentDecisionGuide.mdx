@@ -1,0 +1,361 @@
+{/* This guide helps AI and developers choose the right component for each scenario. */}
+{/* Focus: WHEN to use, not HOW to use (see Components.mdx for API details). */}
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Docs/Component Decision Guide" />
+
+# Component Decision Guide
+
+Use this guide to pick the right component. If you know the scenario, jump to the matching section.
+
+---
+
+## Quick Scenario Lookup
+
+| I need to... | Use |
+|---|---|
+| Let user type text | `InputText` (with label) or `FieldText` (bare) |
+| Let user pick one option from a list | `InputSelect` with `<Option>` children |
+| Show action menu (Edit, Delete, etc.) | `Menu` with `<Action>` children |
+| Show custom floating content | `Dropdown` |
+| Show help text on hover | `Tooltip` |
+| Show a floating interactive panel | `Popover` (rare — usually use `Dropdown`) |
+| Confirm a destructive action | `WarningDialog` |
+| Offer multiple actions to choose from | `ActionsDialog` |
+| Show quick settings/options | `MiniDialog` |
+| Show a standard modal | `ModalWindow` |
+| Show a side panel | `ModalPanel` |
+| Display a status label | `BadgeLabel` |
+| Display a count/number badge | `BadgeCounter` |
+| Display a user avatar circle | `BadgeAvatar` |
+| Display a custom-colored tag | `Chip` |
+| Show truncating tag with tooltip | `ChipTruncatable` |
+| Show a persistent message in content | `Notification` |
+| Show a temporary popup message | `Toast` (WIP — not yet publicly exported) |
+| Build a standard form | `Input*` components (`InputText`, `InputSelect`, etc.) |
+| Build a custom component with selection behavior | `ListBox` + `List` |
+
+---
+
+## Buttons
+
+All buttons share the same prop pattern: `children`, `iconLeft`, `iconRight`, `iconOnly`, `isLoading`, `isPressed`, `disabled`, `size`.
+
+### Decision Tree
+
+```
+What is the button's role?
+│
+├─ Primary action (Save, Submit, Confirm)
+│  → ButtonPrimary
+│
+├─ Secondary action (Cancel, Back, Edit)
+│  → ButtonOutline
+│
+├─ Tertiary/low-emphasis action (Filter, Sort, Settings)
+│  → ButtonMinimal
+│
+├─ Navigation or inline text action ("Learn more", "View details")
+│  → ButtonLink
+│
+├─ Create/add something ("Add item", "+ New")
+│  → ButtonAdd
+│
+├─ Drop zone / dashed add area ("Add list item", drag target)
+│  → ButtonDropzone
+│
+├─ Primary action + extra options (Save ▾)
+│  → ButtonSplit
+│
+└─ Two buttons joined in a rectangle (filter + menu)
+   → ButtonSplitRectangle wrapping ButtonOutline children
+```
+
+### Common naming confusion
+
+| You might call it | Actual component |
+|---|---|
+| "ghost button" | `ButtonMinimal` |
+| "text button" | `ButtonLink` |
+| "secondary button" | `ButtonOutline` |
+| "CTA" / "main button" | `ButtonPrimary` |
+| "icon button" | Any button with `iconOnly` prop |
+| "add button" / "plus button" | `ButtonAdd` |
+| "split button" / "button with dropdown" | `ButtonSplit` |
+| "dropzone" / "dashed button" | `ButtonDropzone` |
+
+### Size
+
+All buttons support `size="standard"` (default, 36px) and `size="small"` (28px). Exception: `ButtonDropzone` is always 40px height.
+
+---
+
+## Input vs Field — The Wrapper Pattern
+
+This is the most important pattern to understand. The library has **two layers** for every input type:
+
+```
+InputText (complete form field)          ← USE THIS in forms
+  └─ InputWrap (adds label, message, tooltip, required)
+    └─ FieldText (bare input element)   ← USE THIS only for custom wrappers
+```
+
+### Rule
+
+- **Building a form?** → Use `Input*` (InputText, InputSelect, InputNumber, etc.)
+- **Building a custom wrapper component?** → Use `Field*` (FieldText, FieldNumber, etc.)
+- **99% of the time** → Use `Input*`
+
+### Full mapping
+
+| Input (with label) | Field (bare) | Purpose |
+|---|---|---|
+| `InputText` | `FieldText` | Single-line text |
+| `InputTextarea` | `FieldTextarea` | Multi-line text |
+| `InputTextareaAi` | `FieldTextareaAi` | Multi-line text with AI features |
+| `InputSearch` | `FieldSearch` | Search with icon |
+| `InputPassword` | — | Password with toggle |
+| `InputNumber` | `FieldNumber` | Numeric input |
+| `InputDate` | `FieldDate` | Date picker |
+| `InputColor` | — | Color picker |
+| `InputSelect` | — | Select from options |
+| `InputDropdown` | — | Custom dropdown content (WIP) |
+| — | `FieldCheck` | Checkbox or radio (`type` prop required!) |
+| — | `FieldToggle` | Toggle switch |
+| — | `FieldRange` | Range slider |
+
+### FieldCheck gotcha
+
+`FieldCheck` requires a `type` prop — it renders both checkboxes and radios:
+
+```tsx
+<FieldCheck type="checkbox" label="Accept terms" />
+<FieldCheck type="radio" label="Option A" name="group" />
+```
+
+---
+
+## Select vs Dropdown vs Menu vs Popover
+
+These four components look similar but serve very different purposes:
+
+### Decision Tree
+
+```
+What will the floating content contain?
+│
+├─ A list of options where user picks one (or more)
+│  → Select (or SelectMultiple)
+│  → Wrapped as InputSelect for forms
+│
+├─ A list of actions (Edit, Delete, Share, Copy)
+│  → Menu with <Action> children
+│
+├─ Custom/arbitrary content (form, preview, settings panel)
+│  → Dropdown
+│
+└─ Nothing — I'm building a component library primitive
+   → Popover (almost never used directly)
+```
+
+### Comparison
+
+| Component | Contains | Keyboard | Closes on | ARIA role | Use in forms? |
+|---|---|---|---|---|---|
+| **Select** | `<Option>` list | Arrow keys + search | Selection | combobox + listbox | Yes (via InputSelect) |
+| **SelectMultiple** | `<Option>` list | Arrow keys + search | Manual close | combobox + listbox | Yes |
+| **Menu** | `<Action>` items | Arrow keys | Action click | menu | No |
+| **Dropdown** | Anything | Configurable | ESC / click outside | — | Via InputDropdown (WIP) |
+| **Popover** | Anything | None | Manual | — | No |
+
+### Key distinctions
+
+- **Select** = "pick a value" → changes form state
+- **Menu** = "do an action" → triggers side effects
+- **Dropdown** = "show content" → generic container
+- **Popover** = low-level primitive → rarely use directly
+
+### Fragment gotcha
+
+`Select` and `SelectMultiple` do **not** allow React Fragments as direct children — pass `<Option>` elements directly. `Menu` **does** allow Fragments around `<Action>` children.
+
+### Select auto-search
+
+`Select` automatically shows a search input when there are **10 or more options**. No configuration needed.
+
+---
+
+## Tooltip vs Popover
+
+```
+Is the content interactive (buttons, links, inputs)?
+│
+├─ No, just informational text → Tooltip
+│
+└─ Yes, user needs to interact → Dropdown (not Popover directly)
+```
+
+| | Tooltip | Dropdown/Popover |
+|---|---|---|
+| Trigger | Hover / focus | Click |
+| Content | Text only | Any content |
+| Interactive | No | Yes |
+| Has arrow | Yes | No |
+| Auto-dismiss | On mouse leave | On ESC / click outside |
+
+---
+
+## Badge vs Chip
+
+```
+What are you displaying?
+│
+├─ A status label (Active, Pending, Failed)
+│  → BadgeLabel with variant
+│
+├─ A numeric indicator (unread count, notifications)
+│  → BadgeCounter
+│
+├─ User initials in a circle
+│  → BadgeAvatar
+│
+├─ A tag/filter with custom colors
+│  → Chip
+│
+└─ A tag that may truncate with tooltip
+   → ChipTruncatable
+```
+
+### Key difference
+
+- **Badge** = predefined semantic variants, non-interactive, status display
+- **Chip** = custom colors via props, can be interactive (onClick), flexible styling
+
+| | Badge | Chip |
+|---|---|---|
+| Colors | Predefined variants | Custom via `borderColor`/`background` props |
+| Interactive | Never | Can be (add onClick) |
+| Truncation | No | `ChipTruncatable` with auto-tooltip |
+| Use case | Status, counts, avatars | Tags, filters, selections |
+
+---
+
+## Notification vs Toast
+
+```
+Where should the message appear?
+│
+├─ Inline with page content (banner, form error)
+│  → Notification (or NotificationSmall for compact)
+│
+└─ Floating overlay, temporary
+   → Toast
+```
+
+| | Notification | NotificationSmall | Toast (WIP) |
+|---|---|---|---|
+| Position | In content flow | In content flow | Floating overlay |
+| Duration | Persistent | Persistent | Auto-dismiss |
+| Size | Standard | Compact | Standard |
+| Icon | Yes | No | Yes |
+| Action button | No | No | Yes |
+| Use case | Form errors, warnings | Secondary info | Success/failure feedback |
+
+> **Note:** `Toast` exists in the source but is **not yet publicly exported**. Until it is, use `Notification` for all messaging needs.
+
+---
+
+## Modals vs Dialogs
+
+```
+What is the overlay for?
+│
+├─ Generic content (form, wizard, detail view)
+│  │
+│  ├─ Standard centered window → ModalWindow
+│  ├─ Side panel sliding in → ModalPanel
+│  └─ Full screen takeover → ModalFullscreen
+│
+└─ Specific interaction pattern
+   │
+   ├─ Confirm destructive action ("Delete this?") → WarningDialog
+   ├─ Choose between actions → ActionsDialog
+   └─ Quick lightweight popup → MiniDialog
+```
+
+### Imperative hooks
+
+`WarningDialog` and `ActionsDialog` can be opened imperatively (no state management needed):
+
+```tsx
+const { open: openWarning } = useImperativeModalWarningDialog();
+const { open: openActions } = useImperativeModalActionsDialog();
+
+// Later:
+openWarning({ title: 'Delete?', onConfirm: handleDelete });
+```
+
+Requires `ImperativeModalWindowProvider` in the tree.
+
+---
+
+## ListBox vs List vs Select
+
+These are **layers**, not alternatives:
+
+```
+Select (complete, use this)
+  ├─ ListBox (adds keyboard nav + selection behavior)
+  │  └─ List (structural container)
+  └─ Dropdown (floating positioning)
+```
+
+| Component | Level | What it provides | Use when |
+|---|---|---|---|
+| **Select** | High | Complete dropdown select | Standard form field |
+| **ListBox** | Mid | Keyboard + selection behavior | Building custom select-like components |
+| **List** | Low | Structural layout only | Building custom list UIs |
+
+**Rule:** Use `Select` (or `InputSelect` for forms). Only reach for `ListBox` or `List` if you're building a new component.
+
+---
+
+## Layout: Flex Components
+
+```
+Need horizontal layout?  → RowFlex
+Need vertical layout?    → ColumnFlex
+Need generic flex?       → Flex with direction prop
+Need accessible hiding?  → VisuallyHidden
+```
+
+### Spacing reminder (8px scale)
+
+All numeric `gap`, `margin`, `padding` values are **multiplied by 8**:
+
+| Value | Result |
+|---|---|
+| `0.5` | 4px |
+| `1` | 8px |
+| `2` | 16px (most common) |
+| `3` | 24px |
+| `4` | 32px |
+
+Use string values for exact pixels: `gap="12px"`.
+
+---
+
+## Architecture Layers
+
+The library follows a layered pattern. Higher layers compose lower ones:
+
+```
+Layer 4: Form Wrappers    InputText, InputSelect, InputNumber...
+Layer 3: Components        Select, Menu, WarningDialog, Notification...
+Layer 2: Behaviors         ListBox, FocusLock, withTooltip...
+Layer 1: Primitives        Popover, Portal, List, Flex...
+Layer 0: Atoms             color, typography, shadows, zIndex...
+```
+
+**Always pick the highest layer that fits your need.** Only go lower when building custom components.

@@ -1,0 +1,658 @@
+{/*
+  @ai-context: Utilities documentation for the Stonly Design System.
+  This document covers all utility functions, hooks, and helper components.
+  Includes Portal, FocusLock, IconSvg, StackNavigator, and Interaction utilities.
+*/}
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design System/Utils" />
+
+# Utilities
+
+The design system provides utility functions, hooks, and helper components for common UI patterns.
+
+---
+
+## Portal
+
+Renders children into a separate DOM container outside the React tree.
+
+### Import
+
+```typescript
+import { Portal } from '@stonly/design-system';
+```
+
+### Props
+
+```typescript
+interface PortalProps {
+  children: ReactNode;
+  zIndex?: number;  // default: theme.zIndex.modal (1000)
+}
+```
+
+### Usage
+
+```tsx
+import { Portal } from '@stonly/design-system';
+
+// Basic portal
+<Portal>
+  <ModalContent />
+</Portal>
+
+// Custom z-index
+<Portal zIndex={1200}>
+  <TooltipContent />
+</Portal>
+```
+
+### Behavior
+
+- Creates a dedicated DOM node as portal container
+- Applies z-index via inline style
+- Automatically cleans up empty portal nodes after unmount (100ms delay)
+- Static class: `STATIC_CLASS_NAME.portal`
+
+---
+
+## FocusLock
+
+Traps keyboard focus within a container element.
+
+### Import
+
+```typescript
+import { FocusLock } from '@stonly/design-system';
+```
+
+### Props
+
+```typescript
+interface FocusLockProps {
+  children: ReactNode;
+  isFocusLocked?: boolean;  // default: true
+}
+```
+
+### Usage
+
+```tsx
+import { FocusLock } from '@stonly/design-system';
+
+// Basic usage
+<FocusLock>
+  <DialogContent>
+    <input type="text" />
+    <button>Cancel</button>
+    <button>Confirm</button>
+  </DialogContent>
+</FocusLock>
+
+// Conditionally enabled
+<FocusLock isFocusLocked={isModalOpen}>
+  <ModalContent />
+</FocusLock>
+```
+
+### Behavior
+
+- Intercepts Tab key to cycle through focusable elements
+- First Tab press moves focus to first focusable element
+- Shift+Tab from first element moves to last element
+- Tab from last element moves to first element
+- Prevents nested focus lock conflicts
+- Static class: `STATIC_CLASS_NAME.focusLocked`
+
+---
+
+## IconSvg
+
+SVG icon component with theme color support.
+
+### Import
+
+```typescript
+import { IconSvg } from '@stonly/design-system';
+```
+
+### Props
+
+```typescript
+interface IconSvgProps extends SVGProps<SVGSVGElement> {
+  as: React.FC<SVGProps<SVGSVGElement>>;  // SVG component
+  color?: ((theme: Theme) => string) | string;
+}
+```
+
+### Usage
+
+```tsx
+import { IconSvg } from '@stonly/design-system';
+import PlusIcon from './icons/Plus.svg';
+
+// With theme color function
+<IconSvg
+  as={PlusIcon}
+  color={(theme) => theme.color.iconDefault}
+/>
+
+// With static color
+<IconSvg
+  as={PlusIcon}
+  color="#FF0000"
+/>
+
+// Default (uses currentColor)
+<IconSvg as={PlusIcon} />
+```
+
+### Color Preservation
+
+Add `color-frozen` class to SVG elements that should not be color-changed:
+
+```svg
+<path class="color-frozen" fill="#FF0000" />
+```
+
+---
+
+## IconSrc
+
+Image-based icon component.
+
+### Import
+
+```typescript
+import { IconSrc } from '@stonly/design-system';
+```
+
+### Usage
+
+```tsx
+import { IconSrc } from '@stonly/design-system';
+
+<IconSrc src="/icons/logo.png" alt="Logo" />
+```
+
+---
+
+## StackNavigator
+
+Navigation state management for multi-screen flows.
+
+### Import
+
+```typescript
+import {
+  StackNavigator,
+  useStackNavigationState
+} from '@stonly/design-system';
+```
+
+### State Interface
+
+```typescript
+interface StackNavigatorState {
+  pushState(path: string): void;
+  back(): void;
+  reset(): void;
+  navigationStack: string[];
+  rootSlug: string;
+  isActive: boolean;
+  checkIsCurrentSlug(slug: string): boolean;
+  canGoBack: boolean;
+  isNested: boolean;
+}
+```
+
+### Usage
+
+```tsx
+import { useStackNavigationState } from '@stonly/design-system';
+
+function WizardFlow() {
+  const nav = useStackNavigationState('step-1');
+
+  return (
+    <div>
+      {nav.checkIsCurrentSlug('step-1') && (
+        <Step1 onNext={() => nav.pushState('step-2')} />
+      )}
+      {nav.checkIsCurrentSlug('step-2') && (
+        <Step2
+          onBack={nav.back}
+          onNext={() => nav.pushState('step-3')}
+        />
+      )}
+      {nav.checkIsCurrentSlug('step-3') && (
+        <Step3 onBack={nav.back} onFinish={nav.reset} />
+      )}
+
+      {nav.canGoBack && (
+        <button onClick={nav.back}>Back</button>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+## Interaction Utilities
+
+Advanced utilities for building accessible interactive components.
+
+### InteractionHighlight
+
+Manages keyboard navigation (arrow key highlighting).
+
+```typescript
+import {
+  InteractionHighlightProvider,
+  InteractionHighlightContainerContext,
+  InteractionHighlightItemContext,
+  useInteractionHighlightItem,
+  useInteractionHighlightContainer
+} from '@stonly/design-system';
+```
+
+#### Data Attributes
+
+| Attribute | Description |
+|-----------|-------------|
+| `data-h-uuid` | Unique item identifier |
+| `data-h-dis` | Whether item is disabled |
+| `data-h-pri` | Prioritized (auto-highlight on first key) |
+
+#### Usage
+
+```tsx
+import {
+  InteractionHighlightProvider,
+  useInteractionHighlightContainer,
+  useInteractionHighlightItem
+} from '@stonly/design-system';
+
+function ListContainer({ children }) {
+  const { containerProps } = useInteractionHighlightContainer();
+  return <div {...containerProps}>{children}</div>;
+}
+
+function ListItem({ value, children }) {
+  const { itemProps, isHighlighted } = useInteractionHighlightItem(value);
+
+  return (
+    <div
+      {...itemProps}
+      className={isHighlighted ? 'highlighted' : ''}
+    >
+      {children}
+    </div>
+  );
+}
+
+// Usage
+<InteractionHighlightProvider>
+  <ListContainer>
+    <ListItem value="1">Item 1</ListItem>
+    <ListItem value="2">Item 2</ListItem>
+  </ListContainer>
+</InteractionHighlightProvider>
+```
+
+### InteractionAction
+
+Manages item activation (click, Enter, Space).
+
+```typescript
+import {
+  InteractionActionProvider,
+  useInteractionActionContainer,
+  useInteractionActionItem
+} from '@stonly/design-system';
+```
+
+#### Usage
+
+```tsx
+import {
+  InteractionActionProvider,
+  useInteractionActionContainer,
+  useInteractionActionItem
+} from '@stonly/design-system';
+
+function ActionContainer({ children, onItemAction }) {
+  const { containerProps } = useInteractionActionContainer({
+    onPostAction: onItemAction
+  });
+  return <div {...containerProps}>{children}</div>;
+}
+
+function ActionItem({ onSelect, children }) {
+  const { itemProps } = useInteractionActionItem(onSelect);
+  return <div {...itemProps}>{children}</div>;
+}
+
+// Returns { preventPostAction: true } to skip onPostAction
+```
+
+### InteractionSelect
+
+Manages selection state.
+
+```typescript
+import {
+  InteractionSelectProvider,
+  useInteractionSelectItem
+} from '@stonly/design-system';
+```
+
+### InteractionScroll
+
+Scrolls highlighted items into view.
+
+```typescript
+import {
+  InteractionScrollProvider,
+  useInteractionScrollContainer,
+  useInteractionScrollItem
+} from '@stonly/design-system';
+```
+
+---
+
+## DOM Utilities
+
+### useDomId
+
+Generates or uses a stable DOM ID.
+
+```typescript
+import { useDomId } from '@stonly/design-system';
+
+function MyComponent({ id }) {
+  const domId = useDomId(id);
+  // Returns provided id or generates stable unique id
+  return <div id={domId}>...</div>;
+}
+```
+
+### ID Generators
+
+```typescript
+import {
+  generateErrorMessageDomId,
+  generateLabelDomId,
+  generateDescribeDomId,
+  generateListboxDomId,
+  generateDialogDomId
+} from '@stonly/design-system';
+
+// Generate related element IDs
+const baseId = 'username-field';
+const errorId = generateErrorMessageDomId(baseId, hasError);
+// Returns: 'errormessage-for-username-field' or ''
+
+const labelId = generateLabelDomId(baseId, hasLabel);
+// Returns: 'label-for-username-field' or ''
+```
+
+### useDomElementSize
+
+Tracks element width on resize.
+
+```typescript
+import { useDomElementSize } from '@stonly/design-system';
+
+function MyComponent() {
+  const ref = useRef<HTMLDivElement>(null);
+  const width = useDomElementSize(ref);
+
+  return <div ref={ref}>Width: {width}px</div>;
+}
+```
+
+### isNodeScrolledIntoView
+
+Checks if element is visible in viewport.
+
+```typescript
+import { isNodeScrolledIntoView } from '@stonly/design-system';
+
+const isVisible = isNodeScrolledIntoView(element);
+```
+
+### mergeRefs
+
+Combines multiple refs into one.
+
+```typescript
+import { mergeRefs } from '@stonly/design-system';
+
+const MyComponent = forwardRef((props, forwardedRef) => {
+  const localRef = useRef();
+  return <div ref={mergeRefs(localRef, forwardedRef)} />;
+});
+```
+
+### mergeClassNames
+
+Combines class names, filtering falsy values.
+
+```typescript
+import { mergeClassNames } from '@stonly/design-system';
+
+const className = mergeClassNames(
+  'base-class',
+  isActive && 'active',
+  isDisabled && 'disabled'
+);
+// Returns: 'base-class active' (if active is true, disabled is false)
+```
+
+### useEffectSkipMount
+
+Effect hook that skips the initial mount.
+
+```typescript
+import { useEffectSkipMount } from '@stonly/design-system';
+
+useEffectSkipMount(() => {
+  // Only runs on subsequent renders, not on mount
+  console.log('Value changed:', value);
+}, [value]);
+```
+
+### useReducedMotion
+
+Checks for prefers-reduced-motion setting.
+
+```typescript
+import { useReducedMotion } from '@stonly/design-system';
+
+function AnimatedComponent() {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      animate={{ opacity: 1 }}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+    />
+  );
+}
+```
+
+---
+
+## Keyboard Utilities
+
+### useOnKeysDown
+
+Handles specific keyboard events.
+
+```typescript
+import { useOnKeysDown } from '@stonly/design-system';
+
+// Supported keys: 'Escape', 'Enter', 'Tab', 'ArrowDown', 'ArrowUp'
+
+function MyComponent() {
+  useOnKeysDown({
+    eventKeyList: ['Escape', 'Enter'],
+    callback: (event) => {
+      if (event.key === 'Escape') {
+        handleClose();
+      } else if (event.key === 'Enter') {
+        handleSubmit();
+      }
+    },
+    condition: isOpen  // Optional: only active when true
+  });
+
+  return <div>...</div>;
+}
+```
+
+---
+
+## Click Outside Utility
+
+### useOnClickOutside
+
+Handles clicks outside an element.
+
+```typescript
+import { useOnClickOutside } from '@stonly/design-system';
+
+function Dropdown({ triggerRef }) {
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useOnClickOutside({
+    elementRef: contentRef,
+    exceptionRef: triggerRef,  // Don't close when clicking trigger
+    callback: () => setIsOpen(false),
+    condition: isOpen
+  });
+
+  return <div ref={contentRef}>...</div>;
+}
+```
+
+---
+
+## DOM Event Helpers
+
+```typescript
+import {
+  stopPropagation,
+  preventDefault,
+  stopPropagationAndPreventDefault
+} from '@stonly/design-system';
+
+// Usage
+<button onClick={stopPropagation(handleClick)}>
+  Click
+</button>
+
+<form onSubmit={preventDefault(handleSubmit)}>
+  ...
+</form>
+
+<a onClick={stopPropagationAndPreventDefault(handleLinkClick)}>
+  Link
+</a>
+```
+
+---
+
+## DOM Node Helpers
+
+```typescript
+import {
+  getFirstFocusableElement,
+  getLastFocusableElement,
+  getAllFocusableElements
+} from '@stonly/design-system';
+
+// Get focusable elements within a container
+const container = document.getElementById('modal');
+const firstFocusable = getFirstFocusableElement(container);
+const lastFocusable = getLastFocusableElement(container);
+const allFocusable = getAllFocusableElements(container);
+```
+
+---
+
+## DOM Element Resize Events
+
+```typescript
+import {
+  addResizeEventListener,
+  removeResizeEventListener
+} from '@stonly/design-system';
+
+// Listen for element resize
+const cleanup = addResizeEventListener(element, () => {
+  console.log('Element resized');
+});
+
+// Later: cleanup()
+```
+
+---
+
+## Usage Patterns
+
+### Building an Accessible Dropdown
+
+```tsx
+import {
+  Portal,
+  FocusLock,
+  useOnKeysDown,
+  useOnClickOutside,
+  InteractionHighlightProvider,
+  InteractionActionProvider
+} from '@stonly/design-system';
+
+function MyDropdown({ trigger, children, onClose }) {
+  const triggerRef = useRef();
+  const contentRef = useRef();
+
+  useOnKeysDown({
+    eventKeyList: ['Escape'],
+    callback: onClose,
+    condition: isOpen
+  });
+
+  useOnClickOutside({
+    elementRef: contentRef,
+    exceptionRef: triggerRef,
+    callback: onClose,
+    condition: isOpen
+  });
+
+  return (
+    <>
+      <button ref={triggerRef} onClick={toggle}>
+        {trigger}
+      </button>
+      {isOpen && (
+        <Portal>
+          <FocusLock>
+            <InteractionHighlightProvider>
+              <InteractionActionProvider onPostAction={onClose}>
+                <div ref={contentRef}>
+                  {children}
+                </div>
+              </InteractionActionProvider>
+            </InteractionHighlightProvider>
+          </FocusLock>
+        </Portal>
+      )}
+    </>
+  );
+}
+```

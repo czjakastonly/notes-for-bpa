@@ -1,0 +1,461 @@
+{/*
+  @ai-context: Layout documentation for the Stonly Design System.
+  This document covers the Flex layout components (Flex, RowFlex, ColumnFlex),
+  the 8px spacing multiplier system, and layout patterns.
+  Critical for AI: All numeric spacing values are multiplied by 8.
+*/}
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design System/Layout" />
+
+# Layout Components
+
+The design system provides flexible layout components built on CSS Flexbox with an integrated 8px spacing system.
+
+---
+
+## 8px Spacing System
+
+### Overview
+
+**CRITICAL CONCEPT:** The design system uses an 8px multiplier (`PIXEL_MULTIPLICATOR = 8`) for all spacing values.
+
+When you pass a **numeric value** to any spacing prop (`gap`, `margin`, `padding`), it is automatically multiplied by 8 to get the pixel value.
+
+### Conversion Formula
+
+```typescript
+// Internal calculation
+const calcValue = (value: number | string) => {
+  if (typeof value === 'number') {
+    return `${value * 8}px`;  // Multiplied by 8
+  }
+  return value;  // String values pass through unchanged
+};
+```
+
+### Quick Reference
+
+| You Write | Result | Note |
+|-----------|--------|------|
+| `gap={0.5}` | 4px | ✓ Half-step (useful for tight spacing) |
+| `gap={1}` | 8px | ✓ Minimal spacing |
+| `gap={1.5}` | 12px | ✓ Half-step (useful for fine-tuning) |
+| `gap={2}` | 16px | ✓ Standard spacing (most common) |
+| `gap={3}` | 24px | ✓ Medium spacing |
+| `gap={4}` | 32px | ✓ Large spacing |
+| `gap={2.5}` | 20px | ⚠️ Possible but prefer whole numbers |
+| `gap={16}` | 128px | ❌ Common mistake! |
+| `gap="16px"` | 16px | ✓ Exact value (bypasses multiplier) |
+| `margin={2}` | 16px | ✓ Same scale applies |
+| `padding={3}` | 24px | ✓ Same scale applies |
+
+### Why 8px?
+
+The 8px grid system provides:
+- Visual consistency across all components
+- Easier alignment with design tools (Figma uses 8px grid)
+- Predictable spacing that scales well
+- Harmonious proportions (8, 16, 24, 32, 40...)
+
+**Note:** Half-steps like `0.5` (4px) and `1.5` (12px) are supported and useful for fine-tuning, but prefer whole numbers (1, 2, 3, 4) for better consistency.
+
+### Common Mistakes
+
+```tsx
+// ❌ WRONG - Using pixel values as numbers
+<RowFlex gap={16} margin={24}>
+  {/* Creates 128px gap and 192px margin! */}
+</RowFlex>
+
+// ✓ RIGHT - Use scale values
+<RowFlex gap={2} margin={3}>
+  {/* Creates 16px gap and 24px margin */}
+</RowFlex>
+
+// ✓ ALSO RIGHT - Use exact pixel strings
+<RowFlex gap="16px" margin="24px">
+  {/* Creates exactly 16px gap and 24px margin */}
+</RowFlex>
+```
+
+---
+
+## Flex Component
+
+The base `Flex` component is a flexible container with comprehensive layout props.
+
+### Import
+
+```typescript
+import { Flex, RowFlex, ColumnFlex } from '@stonly/design-system';
+```
+
+### Props Reference
+
+```typescript
+interface FlexProps extends React.HTMLAttributes<HTMLDivElement> {
+  // Basic
+  id?: string;
+  className?: string;
+  style?: CSSProperties;
+  children?: ReactNode;
+
+  // Display
+  display?: 'block' | 'inline' | 'inline-block' | 'flex' | 'inline-flex' | 'none';
+
+  // Flex container properties
+  direction?: 'row' | 'column';
+  reverse?: boolean;  // Reverses flex direction
+  alignItems?: 'flex-start' | 'flex-end' | 'center' | 'stretch';
+  justifyContent?: 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'space-evenly' | 'stretch';
+  flexWrap?: 'wrap' | 'nowrap' | 'wrap-reverse';
+
+  // Flex item properties
+  flexGrow?: number;
+  flexShrink?: number;
+  flexBasis?: string | number;
+
+  // Spacing (numbers × 8: gap={2} = 16px, strings pass through: gap="12px" = 12px)
+  gap?: string | number;
+
+  // Margin (numbers × 8: margin={2} = 16px, strings pass through: margin="12px" = 12px)
+  margin?: string | number;
+  marginX?: string | number;      // Left and right
+  marginY?: string | number;      // Top and bottom
+  marginTop?: string | number;
+  marginRight?: string | number;
+  marginBottom?: string | number;
+  marginLeft?: string | number;
+
+  // Padding (numbers × 8: padding={2} = 16px, strings pass through: padding="12px" = 12px)
+  padding?: string | number;
+  paddingX?: string | number;     // Left and right
+  paddingY?: string | number;     // Top and bottom
+  paddingTop?: string | number;
+  paddingRight?: string | number;
+  paddingBottom?: string | number;
+  paddingLeft?: string | number;
+
+  // Position
+  position?: 'relative' | 'absolute';
+}
+```
+
+### Spacing Props Priority
+
+Spacing props are combined with the following priority (higher overrides lower):
+
+1. `margin` / `padding` - Base value for all sides
+2. `marginX` / `paddingX` - Overrides left and right
+3. `marginY` / `paddingY` - Overrides top and bottom
+4. Individual props (`marginTop`, `paddingLeft`, etc.) - Highest priority
+
+```tsx
+// Example: margin=1, marginX=2, marginLeft=3
+// Results in: margin-top: 8px, margin-right: 16px, margin-bottom: 8px, margin-left: 24px
+
+<Flex margin={1} marginX={2} marginLeft={3}>
+  {children}
+</Flex>
+```
+
+---
+
+## RowFlex
+
+`RowFlex` is a convenience component that sets `direction="row"` by default.
+
+**⚠️ Spacing Note:** All numeric values in `gap`, `margin`, `padding` props are multiplied by 8. Pass strings for exact pixel values.
+
+### Definition
+
+```typescript
+export const RowFlex = forwardRef<HTMLDivElement, FlexProps>((props, ref) => {
+  return <Flex {...props} ref={ref} direction="row" />;
+});
+```
+
+### Usage
+
+```tsx
+import { RowFlex } from '@stonly/design-system';
+
+// Horizontal layout with gap
+<RowFlex gap={2}>  {/* 16px gap */}
+  <Button>Action 1</Button>
+  <Button>Action 2</Button>
+</RowFlex>
+
+// Centered items with space between
+<RowFlex
+  gap={2}  {/* 16px gap */}
+  alignItems="center"
+  justifyContent="space-between"
+>
+  <Logo />
+  <Navigation />
+  <UserMenu />
+</RowFlex>
+
+// Wrap items on smaller screens
+<RowFlex gap={2} flexWrap="wrap">  {/* 16px gap */}
+  {items.map(item => <Card key={item.id} />)}
+</RowFlex>
+```
+
+### Common RowFlex Patterns
+
+```tsx
+// Navigation bar
+<RowFlex
+  padding={2}  {/* 16px padding */}
+  alignItems="center"
+  justifyContent="space-between"
+>
+  <Logo />
+  <RowFlex gap={2}>  {/* 16px gap */}
+    <NavLink>Home</NavLink>
+    <NavLink>About</NavLink>
+    <NavLink>Contact</NavLink>
+  </RowFlex>
+</RowFlex>
+
+// Button group
+<RowFlex gap={1}>  {/* 8px gap */}
+  <ButtonOutline>Cancel</ButtonOutline>
+  <ButtonPrimary>Save</ButtonPrimary>
+</RowFlex>
+
+// Centered content
+<RowFlex
+  justifyContent="center"
+  alignItems="center"
+  style={{ minHeight: '100vh' }}
+>
+  <LoginForm />
+</RowFlex>
+```
+
+---
+
+## ColumnFlex
+
+`ColumnFlex` is a convenience component that sets `direction="column"` by default.
+
+**⚠️ Spacing Note:** All numeric values in `gap`, `margin`, `padding` props are multiplied by 8. Pass strings for exact pixel values.
+
+### Definition
+
+```typescript
+export const ColumnFlex = forwardRef<HTMLDivElement, FlexProps>((props, ref) => {
+  return <Flex {...props} ref={ref} direction="column" />;
+});
+```
+
+### Usage
+
+```tsx
+import { ColumnFlex } from '@stonly/design-system';
+
+// Vertical layout with gap
+<ColumnFlex gap={2}>  {/* 16px gap */}
+  <InputText label="Name" />
+  <InputText label="Email" />
+  <ButtonPrimary>Submit</ButtonPrimary>
+</ColumnFlex>
+
+// Full-height page layout
+<ColumnFlex style={{ minHeight: '100vh' }}>
+  <Header />
+  <ColumnFlex flexGrow={1}>
+    <MainContent />
+  </ColumnFlex>
+  <Footer />
+</ColumnFlex>
+```
+
+### Common ColumnFlex Patterns
+
+```tsx
+// Form layout
+<ColumnFlex gap={2} padding={3}>  {/* 16px gap, 24px padding */}
+  <ColumnFlex gap={1}>  {/* 8px gap */}
+    <InputText label="First Name" />
+    <InputText label="Last Name" />
+  </ColumnFlex>
+  <InputText label="Email" />
+  <InputTextarea label="Message" />
+  <RowFlex gap={1} justifyContent="flex-end">  {/* 8px gap */}
+    <ButtonOutline>Cancel</ButtonOutline>
+    <ButtonPrimary>Submit</ButtonPrimary>
+  </RowFlex>
+</ColumnFlex>
+
+// Card content
+<ColumnFlex gap={2} padding={2}>  {/* 16px gap, 16px padding */}
+  <Typography variant="h3">Card Title</Typography>
+  <Typography variant="paragraph1">Card description text</Typography>
+  <RowFlex gap={1}>  {/* 8px gap */}
+    <ButtonLink>Learn more</ButtonLink>
+  </RowFlex>
+</ColumnFlex>
+
+// Sidebar
+<ColumnFlex
+  gap={1}  {/* 8px gap */}
+  padding={2}  {/* 16px padding */}
+  style={{ width: '240px', borderRight: '1px solid' }}
+>
+  <NavItem>Dashboard</NavItem>
+  <NavItem>Settings</NavItem>
+  <NavItem>Profile</NavItem>
+</ColumnFlex>
+```
+
+---
+
+## VisuallyHidden
+
+The `VisuallyHidden` component hides content visually while keeping it accessible to screen readers.
+
+### Import
+
+```typescript
+import { VisuallyHidden } from '@stonly/design-system';
+```
+
+### Usage
+
+```tsx
+// Accessible icon button
+<ButtonMinimal iconOnly={<SearchIcon />}>
+  <VisuallyHidden>Search</VisuallyHidden>
+</ButtonMinimal>
+
+// Skip link
+<VisuallyHidden as="a" href="#main-content">
+  Skip to main content
+</VisuallyHidden>
+```
+
+---
+
+## Layout Examples
+
+### Dashboard Layout
+
+```tsx
+<ColumnFlex style={{ minHeight: '100vh' }}>
+  {/* Header */}
+  <RowFlex
+    padding={2}  {/* 16px */}
+    alignItems="center"
+    justifyContent="space-between"
+    style={{ borderBottom: '1px solid' }}
+  >
+    <Logo />
+    <UserMenu />
+  </RowFlex>
+
+  {/* Main area */}
+  <RowFlex flexGrow={1}>
+    {/* Sidebar */}
+    <ColumnFlex
+      gap={1}  {/* 8px */}
+      padding={2}  {/* 16px */}
+      style={{ width: '240px' }}
+    >
+      <NavItem>Dashboard</NavItem>
+      <NavItem>Reports</NavItem>
+      <NavItem>Settings</NavItem>
+    </ColumnFlex>
+
+    {/* Content */}
+    <ColumnFlex
+      flexGrow={1}
+      gap={3}  {/* 24px */}
+      padding={3}  {/* 24px */}
+    >
+      <h1>Dashboard</h1>
+      <RowFlex gap={2} flexWrap="wrap">  {/* 16px */}
+        <StatCard />
+        <StatCard />
+        <StatCard />
+      </RowFlex>
+    </ColumnFlex>
+  </RowFlex>
+</ColumnFlex>
+```
+
+### Form Layout
+
+```tsx
+<ColumnFlex gap={3} padding={3} style={{ maxWidth: '400px' }}>  {/* 24px gap, 24px padding */}
+  <ColumnFlex gap={2}>  {/* 16px gap */}
+    <InputText
+      label="Username"
+      required
+      message="Enter your username"
+    />
+    <InputPassword
+      label="Password"
+      required
+    />
+  </ColumnFlex>
+
+  <RowFlex justifyContent="space-between" alignItems="center">
+    <FieldCheck label="Remember me" />
+    <ButtonLink>Forgot password?</ButtonLink>
+  </RowFlex>
+
+  <ButtonPrimary style={{ width: '100%' }}>
+    Sign In
+  </ButtonPrimary>
+</ColumnFlex>
+```
+
+### Grid-like Layout
+
+```tsx
+<RowFlex gap={2} flexWrap="wrap">  {/* 16px gap */}
+  {items.map(item => (
+    <ColumnFlex
+      key={item.id}
+      gap={1}  {/* 8px */}
+      padding={2}  {/* 16px */}
+      style={{
+        width: 'calc(33.333% - 16px)', // 3 columns with gap
+        border: '1px solid'
+      }}
+    >
+      <img src={item.image} alt={item.title} />
+      <h3>{item.title}</h3>
+      <p>{item.description}</p>
+    </ColumnFlex>
+  ))}
+</RowFlex>
+```
+
+---
+
+## Best Practices
+
+1. **Use scale values (1, 2, 3, 4)** - Numbers are multiplied by 8: `gap={2}` = 16px
+2. **Half-steps available (0.5, 1.5)** - Useful for 4px and 12px spacing, but prefer whole numbers when possible
+3. **Wrong:** `gap={16}` = 128px ❌ | **Right:** `gap={2}` = 16px ✓
+4. **For exact pixels, use strings** - `gap="12px"` bypasses the multiplier
+5. **Same applies to margin/padding** - All numeric spacing uses 8px scale
+6. **Prefer RowFlex/ColumnFlex** - Clearer intent than base Flex component
+
+```tsx
+// ✓ Use scale values
+<RowFlex gap={2} padding={3}>  {/* 16px gap, 24px padding */}
+
+// ✓ Or use exact strings
+<RowFlex gap="12px" padding="20px">
+
+// ❌ Don't use pixel values as numbers
+<RowFlex gap={16} padding={24}>  {/* Results in 128px and 192px! */}
+```

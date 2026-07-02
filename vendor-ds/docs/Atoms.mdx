@@ -1,0 +1,399 @@
+{/*
+  @ai-context: Design Tokens (Atoms) documentation for the Stonly Design System.
+  This document describes all design tokens: colors, typography, shadows, and z-index values.
+  These are the foundational building blocks used throughout all components.
+*/}
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design System/Atoms" />
+
+# Atoms - Design Tokens
+
+Atoms are the foundational design tokens that define the visual language of the design system. They include colors, typography, shadows, and z-index values.
+
+**Figma Reference:** https://www.figma.com/design/SvImSJtWiaK0m6BSC4WEBn/Atoms?node-id=0-1&p=f&m=dev
+
+---
+
+## Colors
+
+### Import
+
+```typescript
+import { color } from '@stonly/design-system';
+// or
+import { PALETTE, color } from './ui/atoms/colors';
+```
+
+### Color Palette
+
+The palette contains 9 color families plus neutrals, each with numbered variants (100-750):
+
+| Family | Variants | Description |
+|--------|----------|-------------|
+| **Green** | 100-750 | Success states, active indicators |
+| **Teal** | 100-750 | Alternative accent color |
+| **Blue** | 100-750 | Information, links, focus states |
+| **Purple** | 100-750 | Brand accent, guided tours |
+| **Magenta** | 100-750 | Decorative accent |
+| **Pink** | 100-750 | Primary brand color |
+| **Red** | 100-750 | Error, danger states |
+| **Orange** | 100-750 | Warning states |
+| **Yellow** | 100-750 | Warning states, highlights |
+| **Neutral** | 100-750 | Text, backgrounds, borders |
+
+### Palette Values
+
+```typescript
+const PALETTE = {
+  // Green family
+  green100: '#E8F9F0',
+  green200: '#CFF0DE',
+  green300: '#75D3A8',
+  green400: '#2C9F72',
+  green500: '#217E5A',
+  green600: '#165E42',
+  green750: '#002D19',
+
+  // Blue family
+  blue100: '#EEF6FE',
+  blue200: '#D2E4FE',
+  blue300: '#A2C8F7',
+  blue400: '#5A8BE8',
+  blue500: '#3F67DC',
+  blue600: '#3449AC',
+  blue750: '#142350',
+
+  // Pink family (Primary brand)
+  pink100: '#FFF1F9',
+  pink200: '#FFE0ED',
+  pink300: '#FCAAC5',
+  pink400: '#F74D7E',
+  pink475: '#E61168',  // Primary brand color
+  pink600: '#A60045',
+  pink750: '#52001F',
+
+  // Red family
+  red100: '#FFF2F2',
+  red200: '#FFE1E1',
+  red300: '#FFABA7',
+  red400: '#F8505B',
+  red500: '#D92034',
+  red600: '#A9001C',
+  red750: '#540001',
+
+  // Neutral family
+  neutral100: '#F7F7F9',
+  neutral200: '#E2E2E6',
+  neutral300: '#C1C0CB',
+  neutral400: '#848296',
+  neutral500: '#706D84',
+  neutral600: '#474459',
+  neutral750: '#1C1A24',
+  neutral100A: '#2621440A',  // With alpha
+  neutral200A: '#2621441A',  // With alpha
+  white: '#FFFFFF',
+};
+```
+
+### Semantic Colors
+
+The `color` object provides semantic tokens mapped to palette values:
+
+#### Text Colors
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `color.textDark` | neutral750 | Headings, emphasized text |
+| `color.textDefault` | neutral600 | Body text |
+| `color.textSubtle` | neutral500 | Secondary text |
+| `color.textPlaceholder` | neutral400 | Input placeholders |
+| `color.textHover` | neutral750 | Text on hover |
+| `color.textActive` | neutral750 | Active text |
+| `color.textDefaultInverse` | white | Text on dark backgrounds |
+| `color.textInformation` | blue500 | Informational messages |
+| `color.textSuccess` | green500 | Success messages |
+| `color.textWarning` | yellow500 | Warning messages |
+| `color.textDanger` | red500 | Error messages |
+| `color.textLink` | blue500 | Link text |
+| `color.textLinkHover` | blue600 | Link text on hover |
+| `color.textLinkPressed` | blue750 | Link text when pressed |
+
+#### Background Colors
+
+| Token | Usage |
+|-------|-------|
+| `color.backgroundDefault` | Default surface |
+| `color.backgroundDefaultHover` | Surface on hover |
+| `color.backgroundDefaultPressed` | Surface when pressed |
+| `color.backgroundDefaultActive` | Active surface |
+| `color.backgroundPrimary` | Primary buttons (pink475) |
+| `color.backgroundPrimaryHover` | Primary buttons on hover |
+| `color.backgroundPrimaryPressed` | Primary buttons when pressed |
+| `color.backgroundBrand` | Brand elements |
+| `color.backgroundInformation` | Info banners |
+| `color.backgroundInformationSubtle` | Subtle info backgrounds |
+| `color.backgroundSuccess` | Success banners |
+| `color.backgroundSuccessSubtle` | Subtle success backgrounds |
+| `color.backgroundWarning` | Warning banners |
+| `color.backgroundWarningSubtle` | Subtle warning backgrounds |
+| `color.backgroundDanger` | Error banners |
+| `color.backgroundDangerSubtle` | Subtle error backgrounds |
+
+#### Icon Colors
+
+| Token | Usage |
+|-------|-------|
+| `color.iconDefault` | Default icon color |
+| `color.iconDefaultWithText` | Icons paired with text |
+| `color.iconSubtle` | De-emphasized icons |
+| `color.iconHover` | Icons on hover |
+| `color.iconDefaultInverse` | Icons on dark backgrounds |
+| `color.iconInformation` | Info icons |
+| `color.iconSuccess` | Success icons |
+| `color.iconWarning` | Warning icons |
+| `color.iconDanger` | Error icons |
+
+#### Border Colors
+
+| Token | Usage |
+|-------|-------|
+| `color.borderSubtle` | Subtle dividers |
+| `color.borderDefault` | Default borders |
+| `color.borderDefaultHover` | Borders on hover |
+| `color.borderPrimary` | Primary accent borders |
+| `color.borderInformation` | Info state borders |
+| `color.borderSuccess` | Success state borders |
+| `color.borderWarning` | Warning state borders |
+| `color.borderDanger` | Error state borders |
+| `color.borderFocus` | Focus ring color |
+
+### Usage Example
+
+```tsx
+import { color } from '@stonly/design-system';
+import styled from 'styled-components';
+
+const Card = styled.div`
+  background: ${color.backgroundDefault};
+  border: 1px solid ${color.borderDefault};
+  color: ${color.textDefault};
+
+  &:hover {
+    border-color: ${color.borderDefaultHover};
+  }
+`;
+
+const ErrorMessage = styled.span`
+  color: ${color.textDanger};
+`;
+```
+
+---
+
+## Typography
+
+### Import
+
+```typescript
+import { typography } from '@stonly/design-system';
+```
+
+### Font Weights
+
+```typescript
+const fontWeight = {
+  regular: 400,
+  medium: 500,
+  bold: 700,
+};
+```
+
+### Typography Styles
+
+#### Headings
+
+| Token | Font Size | Line Height | Weight | Usage |
+|-------|-----------|-------------|--------|-------|
+| `typography.h0` | 32px | 48px | regular | Page titles |
+| `typography.h1` | 28px | 40px | regular | Section titles |
+| `typography.h2` | 24px | 32px | regular | Subsection titles |
+| `typography.h3` | 16px | 24px | regular | Card titles |
+| `typography.h3Strong` | 16px | 24px | medium | Emphasized card titles |
+
+#### Paragraphs
+
+| Token | Font Size | Line Height | Weight | Usage |
+|-------|-----------|-------------|--------|-------|
+| `typography.paragraph0` | 16px | 28px | regular | Large body text |
+| `typography.paragraph1` | 14px | 24px | regular | Standard body text |
+| `typography.paragraph1Strong` | 14px | 24px | medium | Emphasized body text |
+| `typography.paragraph2` | 12px | 20px | regular | Small body text |
+| `typography.paragraphSmall` | 11px | 16px | medium | Captions, footnotes |
+
+#### UI Elements
+
+| Token | Font Size | Line Height | Weight | Usage |
+|-------|-----------|-------------|--------|-------|
+| `typography.uiElement` | 14px | 20px | regular | Buttons, inputs |
+| `typography.uiElementStrong` | 14px | 20px | medium | Emphasized UI text |
+| `typography.uiElementSmall` | 12px | 16px | regular | Small buttons, tags |
+| `typography.uiElementSmallStrong` | 12px | 16px | medium | Emphasized small UI |
+| `typography.uiElementLabel` | 12px | 16px | medium | Labels (uppercase) |
+| `typography.uiElementLabelSmall` | 10px | 12px | bold | Small labels (uppercase) |
+
+### Usage Example
+
+```tsx
+import { typography, color } from '@stonly/design-system';
+import styled from 'styled-components';
+
+const Title = styled.h1`
+  ${typography.h1};
+  color: ${color.textDark};
+`;
+
+const BodyText = styled.p`
+  ${typography.paragraph1};
+  color: ${color.textDefault};
+`;
+
+const Label = styled.span`
+  ${typography.uiElementLabel};
+  color: ${color.textSubtle};
+`;
+```
+
+### Deprecated Styles
+
+The following styles are deprecated and should not be used in new code:
+
+- `text0` → use `paragraph0`
+- `text1` → use `paragraph1` or `uiElement`
+- `text1Strong` → use `paragraph1Strong`
+- `text2` → use `paragraph2`
+- `label` → use `uiElementLabel`
+- `textSmall` → use `paragraphSmall`
+- `labelSmall` → use `uiElementLabelSmall`
+
+---
+
+## Shadows
+
+### Import
+
+```typescript
+import { shadows } from '@stonly/design-system';
+```
+
+### Shadow Levels
+
+| Token | Offset | Blur | Usage |
+|-------|--------|------|-------|
+| `shadows.basic` | 2px | 4px | Cards, subtle elevation |
+| `shadows.light` | 4px | 8px | Dropdowns, tooltips |
+| `shadows.medium` | 8px | 16px | Modals, dialogs |
+| `shadows.strong` | 16px | 24px | Popovers, high elevation |
+
+### Shadow Values
+
+```typescript
+const shadows = {
+  basic:  '0px 2px 4px 0px rgba(0,0,0,0.08), 0px 0px 4px 0px rgba(0,0,0,0.08)',
+  light:  '0px 4px 8px 0px rgba(0,0,0,0.08), 0px 0px 8px 0px rgba(0,0,0,0.08)',
+  medium: '0px 8px 16px 0px rgba(0,0,0,0.08), 0px 0px 16px 0px rgba(0,0,0,0.08)',
+  strong: '0px 16px 24px 0px rgba(0,0,0,0.08), 0px 0px 24px 0px rgba(0,0,0,0.08)',
+};
+```
+
+### Usage Example
+
+```tsx
+import { shadows } from '@stonly/design-system';
+import styled from 'styled-components';
+
+const Card = styled.div`
+  box-shadow: ${shadows.basic};
+
+  &:hover {
+    box-shadow: ${shadows.light};
+  }
+`;
+
+const Modal = styled.div`
+  box-shadow: ${shadows.medium};
+`;
+```
+
+---
+
+## Z-Index
+
+### Import
+
+```typescript
+import { zIndex } from '@stonly/design-system';
+import type { ZIndexType } from '@stonly/design-system';
+```
+
+### Z-Index Layers
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `zIndex.modal` | 1000 | Modal windows, fullscreen panels |
+| `zIndex.dropdown` | 1050 | Dropdown menus, popovers |
+| `zIndex.notification` | 1100 | Toast notifications |
+| `zIndex.tooltip` | 1150 | Tooltips (highest priority) |
+
+### Usage Example
+
+```tsx
+import { zIndex } from '@stonly/design-system';
+import styled from 'styled-components';
+
+const Modal = styled.div`
+  position: fixed;
+  z-index: ${zIndex.modal};
+`;
+
+const Dropdown = styled.div`
+  position: absolute;
+  z-index: ${zIndex.dropdown};
+`;
+```
+
+---
+
+## Scrollbars
+
+### Import
+
+```typescript
+import { scrollbars } from '@stonly/design-system';
+```
+
+### Description
+
+The `scrollbars` export is a styled-components CSS snippet that provides consistent scrollbar styling across the design system. It uses theme colors for dynamic theming.
+
+```typescript
+// Scrollbar specifications:
+// - Width: 12px
+// - Border radius: 6px
+// - Thumb color: theme-based (changes with theme)
+// - Track: transparent
+```
+
+### Usage Example
+
+```tsx
+import { scrollbars } from '@stonly/design-system';
+import styled from 'styled-components';
+
+const ScrollContainer = styled.div`
+  overflow-y: auto;
+  max-height: 300px;
+  ${scrollbars};
+`;
+```

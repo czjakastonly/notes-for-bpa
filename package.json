@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@stonly/design-system": "bitbucket:stonlybucket/stonly-design-system",
+    "@stonly/design-system": "file:./vendor-ds",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "styled-components": "^6.1.19"
