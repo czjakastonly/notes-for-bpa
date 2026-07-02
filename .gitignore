@@ -3,3 +3,4 @@ dist/
 .figma-import/diff/
 *.local
 .DS_Store
+.vercel

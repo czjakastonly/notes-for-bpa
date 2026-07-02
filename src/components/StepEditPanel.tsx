@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState, useRef } from 'react'
+import ReactDOM from 'react-dom'
 import styled from 'styled-components'
 import { RowFlex, ColumnFlex, IconSvg, color } from '@stonly/design-system'
 import CopyIcon from '@stonly/design-system/icons/Copy-16'
@@ -20,6 +21,9 @@ import HelpIcon from '@stonly/design-system/icons/Help-16'
 import Set1StIcon from '@stonly/design-system/icons/Set1St-16'
 import PlusIcon from '@stonly/design-system/icons/Plus-16'
 import ChevronRightIcon from '@stonly/design-system/icons/ChevronRight-16'
+
+import { NotesForBPABlock } from './NotesForBPABlock'
+import { MoreElementsDropdown } from './MoreElementsDropdown'
 
 import dataTransmissionUrl from '../assets/icons/data-transmission-16.png'
 import collapseSectionUrl from '../assets/icons/collapse-section-16.png'
@@ -378,11 +382,35 @@ const EditorContent = styled.div`
   padding: 0 48px 40px;
 `
 
+const MoreBtnWrap = styled.div`
+  position: relative;
+`
+
 const TitleArea = styled.div`
   padding: 8px 48px 8px;
 `
 
-export const StepEditPanel: React.FC<StepEditPanelProps> = ({ stepTitle, contentBody }) => (
+export const StepEditPanel: React.FC<StepEditPanelProps> = ({ stepTitle, contentBody }) => {
+  const [showMoreDropdown, setShowMoreDropdown] = useState(false)
+  const [hasNotesForBPA, setHasNotesForBPA] = useState(false)
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 })
+  const moreBtnRef = useRef<HTMLDivElement>(null)
+
+  const handleMoreClick = () => {
+    if (!showMoreDropdown && moreBtnRef.current) {
+      const rect = moreBtnRef.current.getBoundingClientRect()
+      setDropdownPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+    }
+    setShowMoreDropdown(v => !v)
+  }
+
+  const handleSelectNotesForBPA = () => {
+    setHasNotesForBPA(true)
+    setShowMoreDropdown(false)
+  }
+
+  return (
+  <>
   <Wrap>
     <InnerColumn>
       {/* Step actions */}
@@ -473,9 +501,14 @@ export const StepEditPanel: React.FC<StepEditPanelProps> = ({ stepTitle, content
               <IconSvg as={SeparatorIcon} color={color.iconDefault} />
             </ToolbarBtn>
             <ToolbarDivider />
-            <ToolbarBtn title="More">
-              <IconSvg as={MoreIcon} color={color.iconDefault} />
-            </ToolbarBtn>
+            <MoreBtnWrap ref={moreBtnRef}>
+              <ToolbarBtn
+                title="More"
+                onClick={handleMoreClick}
+              >
+                <IconSvg as={MoreIcon} color={color.iconDefault} />
+              </ToolbarBtn>
+            </MoreBtnWrap>
           </EditBar>
           <ContentBox>
             <SectionLabel>
@@ -483,6 +516,11 @@ export const StepEditPanel: React.FC<StepEditPanelProps> = ({ stepTitle, content
               <IconSvg as={HelpIcon} color={color.iconSubtle} style={{ width: 12, height: 12 }} />
             </SectionLabel>
             <BodyText>{contentBody}</BodyText>
+            {hasNotesForBPA && (
+              <div style={{ marginTop: 16 }}>
+                <NotesForBPABlock onDelete={() => setHasNotesForBPA(false)} />
+              </div>
+            )}
           </ContentBox>
         </Card>
 
@@ -588,4 +626,15 @@ export const StepEditPanel: React.FC<StepEditPanelProps> = ({ stepTitle, content
       </EditorContent>
     </InnerColumn>
   </Wrap>
-)
+  {showMoreDropdown && ReactDOM.createPortal(
+    <MoreElementsDropdown
+      notesForBPADisabled={hasNotesForBPA}
+      onSelectNotesForBPA={handleSelectNotesForBPA}
+      anchorTop={dropdownPos.top}
+      anchorRight={dropdownPos.right}
+    />,
+    document.body
+  )}
+  </>
+  )
+}
